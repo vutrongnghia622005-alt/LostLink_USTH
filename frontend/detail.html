@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Chi tiết tin | Lost&amp;Found USTH</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="asset/css/base.css" rel="stylesheet">
+<link href="asset/css/main.css" rel="stylesheet">
+<link href="asset/css/liquid-ui.css" rel="stylesheet">
+<link href="asset/css/portal-features.css" rel="stylesheet"/>
+<link href="asset/css/portal-complete.css" rel="stylesheet"/>
+</link></link></link></head>
+<body><header class="site-header">
+<div class="container header-inner">
+<a class="brand" href="index.html">
+<div class="brand-mark"><img alt="USTH" src="asset/img/logo-usth.webp"/></div>
+<div class="brand-copy"><strong>Lost&amp;Found USTH</strong><span>Kết nối để những giá trị được trở lại</span></div>
+</a>
+<nav aria-label="Điều hướng chính" class="main-nav">
+<a data-nav="home" href="index.html">Trang chủ</a>
+<a data-nav="lost" href="lost.html">Tin thất lạc</a>
+<a data-nav="found" href="found.html">Tin nhặt được</a>
+<a data-nav="contact" href="contact.html">Liên hệ</a>
+<a data-nav="mine" href="my-posts.html">Tin của tôi</a>
+</nav>
+<div class="header-actions">
+<a aria-label="Tìm kiếm" class="icon-btn" href="lost.html"><i data-lucide="search"></i></a>
+<a class="btn btn-primary btn-header" href="post.html"><i data-lucide="pencil"></i><span>Đăng tin</span></a>
+</div>
+<button aria-label="Mở menu" class="menu-btn" type="button"><i data-lucide="menu"></i></button>
+</div>
+</header><main><section class="detail-wrap"><div class="container"><div class="breadcrumbs"><a href="index.html">Trang chủ</a><span>/</span><a href="lost.html">Tin thất lạc</a><span>/</span><span>Chi tiết tin</span></div><div class="detail-grid"><section class="detail-gallery"><img alt="Ảnh bài đăng" class="detail-main-image" id="detailImage" src="asset/images/placeholder.svg"/></section><aside class="detail-card"><div class="post-meta-row"><span class="badge lost" id="detailTypeBadge"></span><span class="time" id="detailTime"></span></div><h1 id="detailTitle">Đang tải bài đăng...</h1><div class="detail-meta"><div class="meta-box"><i data-lucide="tag"></i><div><strong>Danh mục</strong><br/>Giấy tờ tùy thân</div></div><div class="meta-box"><i data-lucide="map-pin"></i><div><strong>Địa điểm</strong><br/>A21 - USTH</div></div><div class="meta-box"><i data-lucide="calendar"></i><div><strong>Thời gian</strong><br/>12/09/2026 · 14:30</div></div><div class="meta-box"><i data-lucide="activity"></i><div><strong>Trạng thái</strong><br/>Đang tìm kiếm</div></div></div><div class="detail-description"><strong>Mô tả chi tiết</strong><p></p></div><div class="contact-box" id="detailContact"><h3>Thông tin liên hệ</h3></div><div class="detail-actions"><a class="btn btn-primary" href="contact.html"><i data-lucide="phone"></i>Liên hệ</a><button class="btn btn-feedback" id="feedbackBtn" type="button"><i data-lucide="message-square-reply"></i>Gửi phản hồi</button><button class="btn btn-secondary" id="sharePostBtn" type="button"><i data-lucide="share-2"></i>Chia sẻ</button></div></aside></div><section class="suggestions"><div class="section-heading"><h2>Có thể bạn đang tìm?</h2><a href="found.html">Xem tất cả <i data-lucide="arrow-right"></i></a></div><div class="post-grid"></div></section></div></section></main><footer class="site-footer">
+<div class="container footer-inner">
+<a class="brand footer-brand" href="index.html">
+<div class="brand-mark"><img alt="USTH" src="asset/img/logo-usth.webp"/></div>
+<div class="brand-copy"><strong>Lost&amp;Found USTH</strong><span>Kết nối để những giá trị được trở lại</span></div>
+</a>
+<nav class="footer-nav">
+<a href="index.html">Trang chủ</a><span></span><a href="lost.html">Tin thất lạc</a><span></span><a href="found.html">Tin nhặt được</a><span></span><a href="contact.html">Liên hệ</a><span></span><a href="my-posts.html">Tin của tôi</a>
+</nav>
+<div class="footer-right"><div class="socials"><a aria-label="Facebook" href="#"><i data-lucide="facebook"></i></a><a aria-label="Instagram" href="#"><i data-lucide="instagram"></i></a><a aria-label="Youtube" href="#"><i data-lucide="youtube"></i></a></div><p>© 2026 Lost&amp;Found USTH. Vì một cộng đồng USTH tốt đẹp hơn.</p></div>
+</div>
+</footer>
+<div class="feedback-modal" hidden="" id="feedbackModal">
+<div class="feedback-modal__backdrop" data-feedback-close=""></div>
+<section aria-labelledby="feedbackTitle" aria-modal="true" class="feedback-dialog" role="dialog">
+<button aria-label="Đóng" class="feedback-close" data-feedback-close="" type="button"><i data-lucide="x"></i></button>
+<div class="feedback-dialog__header">
+<span class="feedback-icon"><i data-lucide="message-square-reply"></i></span>
+<div>
+<p class="feedback-kicker">PHẢN HỒI BÀI ĐĂNG</p>
+<h2 id="feedbackTitle">Gửi thông tin cho chủ bài đăng</h2>
+<p id="feedbackTargetTitle">Nếu bạn có thông tin về đồ vật này, hãy để lại lời nhắn.</p>
+</div>
+</div>
+<form class="feedback-form" id="feedbackForm">
+<div class="feedback-fields">
+<label class="field"><span>Họ tên <b class="required">*</b></span><input class="form-control" id="feedbackName" maxlength="80" placeholder="Ví dụ: Nguyễn Minh Anh" required=""/></label>
+<label class="field"><span>Số điện thoại / Email <b class="required">*</b></span><input class="form-control" id="feedbackContact" maxlength="120" placeholder="0901 234 567 hoặc email@usth.edu.vn" required=""/></label>
+<label class="field full"><span>Nội dung phản hồi <b class="required">*</b></span><textarea class="form-textarea" id="feedbackMessage" maxlength="800" minlength="10" placeholder="Ví dụ: Mình đã nhìn thấy đồ vật giống mô tả ở thư viện tầng 2..." required=""></textarea><small>Tối thiểu 10 ký tự. Không gửi mật khẩu hoặc thông tin nhạy cảm.</small></label>
+</div>
+<div class="feedback-note"><i data-lucide="shield-check"></i><span>Phản hồi được lưu trên hệ thống và chỉ hiển thị cho chủ bài khi nhập đúng mã quản lý.</span></div>
+<div class="feedback-form-actions"><button class="btn btn-secondary" data-feedback-close="" type="button">Hủy</button><button class="btn btn-primary" id="feedbackSubmitBtn" type="submit"><i data-lucide="send"></i>Gửi phản hồi</button></div>
+</form>
+<div class="feedback-success" hidden="" id="feedbackSuccess">
+<span class="feedback-success__icon"><i data-lucide="circle-check-big"></i></span>
+<h3>Đã gửi phản hồi</h3>
+<p>Thông tin của bạn đã được lưu và chủ bài có thể xem trong mục “Tin của tôi”.</p>
+<button class="btn btn-primary" data-feedback-close="" type="button">Đóng</button>
+</div>
+</section>
+</div>
+<script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="asset/js/config.js"></script><script src="asset/js/api.js"></script><script src="asset/js/auth.js"></script><script src="asset/js/catalog.js"></script><script src="asset/js/main.js"></script>
+<script src="asset/js/portal-features.js"></script>
+<script src="asset/js/portal-complete.js"></script>
+</body></html>

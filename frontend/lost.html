@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tin thất lạc | Lost&amp;Found USTH</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="asset/css/base.css" rel="stylesheet"/>
+<link href="asset/css/main.css" rel="stylesheet"/>
+<link href="asset/css/liquid-ui.css" rel="stylesheet"/>
+<link href="asset/css/portal-features.css" rel="stylesheet">
+<link href="asset/css/portal-complete.css" rel="stylesheet">
+</link></link></head>
+<body><header class="site-header">
+<div class="container header-inner">
+<a class="brand" href="index.html">
+<div class="brand-mark"><img alt="USTH" src="asset/img/logo-usth.webp"/></div>
+<div class="brand-copy"><strong>Lost&amp;Found USTH</strong><span>Kết nối để những giá trị được trở lại</span></div>
+</a>
+<nav aria-label="Điều hướng chính" class="main-nav">
+<a data-nav="home" href="index.html">Trang chủ</a>
+<a class="active" data-nav="lost" href="lost.html">Tin thất lạc</a>
+<a data-nav="found" href="found.html">Tin nhặt được</a>
+<a data-nav="contact" href="contact.html">Liên hệ</a>
+<a data-nav="mine" href="my-posts.html">Tin của tôi</a>
+</nav>
+<div class="header-actions">
+<a aria-label="Tìm kiếm" class="icon-btn" href="lost.html"><i data-lucide="search"></i></a>
+<a class="btn btn-primary btn-header" href="post.html"><i data-lucide="pencil"></i><span>Đăng tin</span></a>
+</div>
+<button aria-label="Mở menu" class="menu-btn" type="button"><i data-lucide="menu"></i></button>
+</div>
+</header><main>
+<section class="page-hero"><div class="container"><div class="breadcrumbs"><a href="index.html">Trang chủ</a><span>/</span><span>Tin thất lạc</span></div><span class="eyebrow">CỘNG ĐỒNG USTH</span><h1>Tin thất lạc</h1><p>Danh sách các đồ vật đang được sinh viên USTH tìm kiếm.</p></div></section>
+<section class="container">
+<div class="toolbar"><div class="search-box"><i data-lucide="search"></i><input id="pageSearch" placeholder="Tìm theo tiêu đề, mô tả..." type="search"/></div><select id="categoryFilter"><option value="">Tất cả danh mục</option><option>Giấy tờ tùy thân</option><option>Thiết bị điện tử</option><option>Ví, tiền bạc</option><option>Phụ kiện</option><option>Khác</option></select><select id="locationFilter"><option value="">Tất cả địa điểm</option><option>A21</option><option>A11</option><option>A10</option><option>A2</option><option>A18</option><option>A22</option><option>A20</option><option>Cổng 18</option><option>Cổng 18B</option><option>Cổng 18C</option><option>789 Hoàng Quốc Việt</option></select><button class="btn btn-secondary" id="resetFilters">Đặt lại</button></div>
+<div class="listing-layout"><aside class="filter-panel"><h3>Bộ lọc nhanh</h3><div class="filter-group"><strong>Thời gian</strong><label class="check-row"><input checked="" name="time" type="radio"/> Tất cả</label><label class="check-row"><input name="time" type="radio"/> Hôm nay</label><label class="check-row"><input name="time" type="radio"/> 7 ngày gần đây</label></div><div class="filter-group"><strong>Gợi ý</strong><p style="margin:0;color:#728099;font-size:13px">Dùng từ khóa và địa điểm để thu hẹp kết quả nhanh hơn.</p></div></aside><div><div class="results-head"><div><h2>Tin thất lạc</h2><div class="results-count" id="resultCount">6 kết quả</div></div><select aria-label="Sắp xếp theo thời gian" class="form-control" id="sortOrder" style="width:auto"><option value="newest">Mới nhất</option><option value="oldest">Cũ nhất</option></select></div><div class="listing-grid" id="listingGrid"></div><div class="empty-state" hidden="" id="emptyResults"><img alt="Không có kết quả" src="asset/img/find.png"/><h3>Không tìm thấy tin phù hợp</h3><p>Hãy thử từ khóa hoặc bộ lọc khác.</p></div><div aria-label="Phân trang danh sách tin" class="pagination" id="pagination"></div></div></div>
+</section></main><footer class="site-footer">
+<div class="container footer-inner">
+<a class="brand footer-brand" href="index.html">
+<div class="brand-mark"><img alt="USTH" src="asset/img/logo-usth.webp"/></div>
+<div class="brand-copy"><strong>Lost&amp;Found USTH</strong><span>Kết nối để những giá trị được trở lại</span></div>
+</a>
+<nav class="footer-nav">
+<a href="index.html">Trang chủ</a><span></span><a href="lost.html">Tin thất lạc</a><span></span><a href="found.html">Tin nhặt được</a><span></span><a href="contact.html">Liên hệ</a><span></span><a href="my-posts.html">Tin của tôi</a>
+</nav>
+<div class="footer-right"><div class="socials"><a aria-label="Facebook" href="#"><i data-lucide="facebook"></i></a><a aria-label="Instagram" href="#"><i data-lucide="instagram"></i></a><a aria-label="Youtube" href="#"><i data-lucide="youtube"></i></a></div><p>© 2026 Lost&amp;Found USTH. Vì một cộng đồng USTH tốt đẹp hơn.</p></div>
+</div>
+</footer><script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+<script src="asset/js/config.js"></script><script src="asset/js/api.js"></script><script src="asset/js/auth.js"></script><script src="asset/js/catalog.js"></script><script src="asset/js/main.js"></script>
+<script src="asset/js/portal-features.js"></script>
+<script src="asset/js/portal-complete.js"></script>
+</body></html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Đăng nhập Admin | Lost&Found USTH</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../asset/css/admin.css">
+    <link rel="stylesheet" href="../asset/css/admin-liquid-ui.css">
+    <link rel="stylesheet" href="../asset/css/admin-features.css">
+    <link rel="stylesheet" href="../asset/css/admin-complete.css">
+</head>
+
+<body class="login-page">
+    <div class="login-card">
+        <div class="login-brand"><img src="../asset/img/logo-usth.webp" alt="USTH">
+            <h1>Lost&Found USTH Admin</h1>
+            <p>Khu vực quản trị hệ thống</p>
+        </div>
+        <form id="adminLoginForm">
+            <div class="login-field"><label>Email quản trị</label><input id="adminEmail" type="email"
+                    value="admin@usth.edu.vn" required></div>
+            <div class="login-field"><label>Mật khẩu</label><input id="adminPassword" type="password"
+                    placeholder="Nhập mật khẩu" required></div>
+            <div id="loginError" class="login-error">Email hoặc mật khẩu không đúng.</div><button class="login-submit"
+                type="submit">Đăng nhập Admin</button>
+        </form>
+        <p style="text-align:center;margin:18px 0 0"><a href="../index.html" style="color:#155fc1">← Quay lại
+                website</a></p>
+    </div>
+    <script src="../asset/js/config.js"></script>
+    <script src="../asset/js/api.js"></script>
+    <script src="../asset/js/auth.js"></script>
+    <script src="../asset/js/admin.js"></script>
+    <script src="../asset/js/admin-features.js"></script>
+</body>
+
+</html>
