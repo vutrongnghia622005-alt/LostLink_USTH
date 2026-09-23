@@ -25,10 +25,20 @@ const allowedOrigins = getAllowedOrigins();
 
 app.use(cors({
     origin(origin, callback) {
-        if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+        const isAllowedVercelPreview =
+            /^https:\/\/lost-link-usth-[a-z0-9-]+-nghia-d2ee\.vercel\.app$/i.test(
+                origin || ''
+            );
+    
+        if (
+            !origin ||
+            allowedOrigins.length === 0 ||
+            allowedOrigins.includes(origin) ||
+            isAllowedVercelPreview
+        ) {
             return callback(null, true);
         }
-
+    
         callback(new Error('Origin is not allowed by CORS.'));
     }
 }));
