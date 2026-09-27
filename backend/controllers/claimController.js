@@ -2,10 +2,31 @@ const crypto = require('crypto');
 const pool = require('../config/database');
 const { isUuid, isText, databaseError } = require('../lib/validation');
 
-function makeCode(prefix) {
-    return `${prefix}-${crypto.randomBytes(16).toString('hex').toUpperCase()}`;
-}
+function randomBase32(byteLength = 8) {
+    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const bytes = crypto.randomBytes(byteLength);
 
+    let buffer = 0;
+    let bits = 0;
+    let output = '';
+
+    for (const byte of bytes) {
+        buffer = (buffer << 8) | byte;
+        bits += 8;
+        while (bits >= 5) {
+            bits -= 5;
+            output += alphabet[(buffer >>> bits) & 31];
+            buffer &= (1 << bits) - 1;
+        }
+    }
+    if (bits > 0) {
+        output += alphabet[(buffer << (5 - bits)) & 31];
+    }
+    return output;
+}
+function makeCode(prefix) {
+    return `${prefix}-${randomBase32(8)}`;
+}
 async function createClaim(req, res) {
     const postId = req.body.postId;
     const studentId = req.body.studentId;
