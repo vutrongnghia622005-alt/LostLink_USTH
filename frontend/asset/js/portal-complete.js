@@ -93,12 +93,24 @@
         window.lucide?.createIcons();
     }
 
-    async function setupSearchPage() {
-        const results = document.getElementById('completeSearchResults');
-        if (!results) return;
+   async function setupSearchPage() {
+    const results = document.getElementById('completeSearchResults');
+    if (!results) return;
 
-        await renderSearchResults();
+    // Đọc bộ lọc được truyền từ trang chủ
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryFromUrl = urlParams.get('category');
 
+    // Tự động chọn danh mục tương ứng
+    const categorySelect =
+        document.getElementById('completeSearchCategory');
+
+    if (categoryFromUrl && categorySelect) {
+        categorySelect.value = categoryFromUrl;
+    }
+
+    // Sau khi đặt bộ lọc mới tải kết quả
+    await renderSearchResults();
         const ids = [
             'completeSearchQuery',
             'completeSearchCategory',
