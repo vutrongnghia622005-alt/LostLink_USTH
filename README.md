@@ -76,7 +76,7 @@ backend/
 
 ## Cập nhật sửa lỗi 27/09/2026
 
-- Database đang sử dụng: chạy `backend/database/upgrade-2026-09-27.sql` để thêm chỉ mục tìm kiếm, phân trang và cột `image_urls` lưu tối đa 5 ảnh (giữ ảnh cũ). Database mới đã có các chỉ mục trong `schema.sql`.
+- Khi chạy `npm start` hoặc `node server.js`, backend tự chạy `backend/database/upgrade-2026-09-27.sql` trước khi nhận request: thêm cột `image_urls` và chỉ mục còn thiếu, giữ dữ liệu cũ. Chạy lại khi deploy không tạo trùng. Nếu cập nhật database thất bại, backend ghi lỗi và dừng thay vì phục vụ API với schema thiếu. Kết nối `DATABASE_URL` cần quyền cập nhật bảng `posts`. Database mới vẫn khởi tạo bằng `schema.sql` như trước.
 - API danh sách `/api/posts` và `/api/admin/posts` trả `{ posts, total, page, pageSize, totalPages }`; mặc định 20 bài, tối đa 100 bài/trang. Cần triển khai backend và frontend cùng phiên bản.
 - Tìm kiếm toàn văn dùng cấu hình PostgreSQL `simple`, khớp các từ trong tên, mô tả, danh mục và địa điểm; không còn khớp một đoạn bất kỳ bên trong từ. Admin vẫn tìm được mã quản lý chính xác.
 - Ô ảnh cho chọn tối đa 5 ảnh JPG/PNG/WEBP, mỗi ảnh tối đa 5 MB; ảnh đầu là ảnh bìa. Khi sửa, chọn ảnh mới sẽ thay thế toàn bộ ảnh cũ.

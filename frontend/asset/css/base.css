@@ -4,4 +4,4 @@
 .pagination{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:20px 0}.pagination[hidden]{display:none}.page-btn{padding:8px 12px;border:1px solid #c8d4e4;border-radius:6px;background:#fff;color:#17335f}.page-btn.active{background:#17335f;color:#fff}.page-btn:disabled{cursor:default;opacity:.6}
 
 input::placeholder,textarea::placeholder{color:#4f5f78;opacity:1}
-button[hidden],a[hidden]{display:none!important}
+[hidden]{display:none!important}

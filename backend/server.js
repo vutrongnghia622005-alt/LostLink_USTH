@@ -83,8 +83,15 @@ app.use((error, req, res, next) => {
 });
 
 if (require.main === module) {
-    app.listen(port, () => console.log(`LostLink API running on port ${port}`));
-    require('./controllers/uploadController').startUploadCleanup();
+    require('./database/migrate')().then(() => {
+        console.log('Database schema is up to date.');
+        app.listen(port, () => console.log(`LostLink API running on port ${port}`));
+        require('./controllers/uploadController').startUploadCleanup();
+    }).catch(async (error) => {
+        console.error('Database migration failed:', error.message);
+        await require('./config/database').end();
+        process.exitCode = 1;
+    });
 }
 
 module.exports = app;
