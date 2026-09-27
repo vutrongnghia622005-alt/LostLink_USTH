@@ -134,20 +134,20 @@
         root.replaceChildren();
         root.hidden = data.totalPages <= 1;
         if (root.hidden) return;
-        const add = (label, page, disabled = false) => {
+        const add = (label, page, disabled = false, navigation = false) => {
             const button = document.createElement('button');
             button.type = 'button';
-            button.className = `page-btn${page === data.page ? ' active' : ''}`;
+            button.className = `page-btn${navigation ? ' page-nav' : ''}${page === data.page ? ' active' : ''}`;
             button.textContent = label;
             button.disabled = disabled;
             if (page === data.page) button.setAttribute('aria-current', 'page');
             button.addEventListener('click', () => onPage(page));
             root.appendChild(button);
         };
-        add('‹ Trước', data.page - 1, data.page === 1);
+        add('‹ Trước', data.page - 1, data.page === 1, true);
         const start = Math.max(1, Math.min(data.page - 2, data.totalPages - 4));
         for (let page = start; page <= Math.min(data.totalPages, start + 4); page += 1) add(String(page), page);
-        add('Sau ›', data.page + 1, data.page === data.totalPages);
+        add('Sau ›', data.page + 1, data.page === data.totalPages, true);
     }
 
     function debounce(callback, delay = 250) {
