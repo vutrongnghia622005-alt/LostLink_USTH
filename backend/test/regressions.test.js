@@ -105,3 +105,133 @@ test('pending claim cannot skip approval', async () => {
     assert.equal(res.statusCode, 409);
     assert.ok(!statements.some((sql) => sql.startsWith('UPDATE claims')));
 });
+
+test('phone format enforces digit count and allowed characters on create and edit', async () => {
+    const valid = {
+        type: 'lost', title: 'Lost a black laptop', description: 'Black laptop',
+        category: 'Thiết bị điện tử', location: 'A21 - USTH',
+        eventDate: '2026-09-16T10:00:00+07:00', phone: '0900000000',
+        highValue: false, verificationQuestions: []
+    };
+    for (const phone of ['12345678', '+84 90-000-0000', '123456789012345']) {
+        assert.equal(posts.validatePostInput({ ...valid, phone }), null);
+    }
+    for (const phone of ['abcdefghi', '1234567', '1234567890123456', '09(000)00000', '12345678\n', ' '.repeat(81) + '12345678']) {
+        assert.match(posts.validatePostInput({ ...valid, phone }), /8–15/);
+    }
+    let calls = 0;
+    fakePool.query = async () => { calls += 1; return { rows: [{
+        ...valid, id: UUID, event_date: valid.eventDate, management_code: 'LL-SECRET',
+        high_value: false, verification_questions: [], status: 'active'
+    }] }; };
+    const createRes = response();
+    await posts.createPost({ body: { ...valid, phone: 'letters' } }, createRes);
+    assert.equal(createRes.statusCode, 400);
+    assert.equal(calls, 0);
+    const editRes = response();
+    await posts.updatePost({ params: { id: UUID }, headers: {}, body: { phone: 'letters', managementCode: 'LL-SECRET' } }, editRes);
+    assert.equal(editRes.statusCode, 400);
+    assert.equal(calls, 1);
+});
+
+test('public filters and pagination are performed by SQL with a bounded card projection', async () => {
+    const queries = [];
+    fakePool.query = async (sql, values) => {
+        queries.push({ sql, values });
+        return sql.includes('COUNT(*)') ? { rows: [{ total: 13 }] } : { rows: [{ id: UUID, title: 'Laptop', category: 'Thiết bị điện tử', location: 'A11' }] };
+    };
+    const res = response();
+    await posts.getPosts({ query: { page: '2', pageSize: '6', search: 'laptop', category: 'Thiết bị điện tử', location: 'A11', time: '7days', highValue: 'true', sort: 'oldest' } }, res);
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual({ total: res.body.total, page: res.body.page, totalPages: res.body.totalPages }, { total: 13, page: 2, totalPages: 3 });
+    assert.equal(res.body.posts.length, 1);
+    assert.match(queries[0].sql, /plainto_tsquery\('simple'/);
+    assert.doesNotMatch(queries[0].sql, /ILIKE/);
+    assert.match(queries[0].sql, /created_at >= NOW\(\)/);
+    assert.match(queries[0].sql, /p.high_value =/);
+    assert.match(queries[1].sql, /LEFT\(p.description, 240\)/);
+    assert.doesNotMatch(queries[1].sql, /p\.phone|p\.email|p\.management_code|p\.verification_questions/);
+    assert.match(queries[1].sql, /ORDER BY p.created_at ASC, p.id ASC/);
+    assert.match(queries[1].sql, /LIMIT \$\d+ OFFSET \$\d+/);
+    assert.deepEqual(queries[1].values.slice(-2), [6, 6]);
+});
+
+test('public and admin reject invalid pagination before querying the database', async () => {
+    fakePool.query = async () => { throw new Error('must not query'); };
+    for (const query of [{ page: '0' }, { page: '-1' }, { page: 'abc' }, { pageSize: '101' }, { pageSize: '1.5' }, { page: '9007199254740991', pageSize: '100' }]) {
+        for (const controller of [posts, admin]) {
+            const res = response();
+            await controller.getPosts({ query }, res);
+            assert.equal(res.statusCode, 400);
+        }
+    }
+});
+
+test('admin pagination filters all records and clamps a removed last page', async () => {
+    const queries = [];
+    fakePool.query = async (sql, values) => {
+        queries.push({ sql, values });
+        return sql.includes('COUNT(*)') ? { rows: [{ total: 20 }] } : { rows: [] };
+    };
+    const res = response();
+    await admin.getPosts({ query: { page: '2', pageSize: '20', type: 'found', status: 'hidden', search: 'LL-12345' } }, res);
+    assert.equal(res.body.page, 1);
+    assert.equal(res.body.total, 20);
+    assert.match(queries[1].sql, /p.type = \$1 AND p.status = \$2/);
+    assert.match(queries[1].sql, /p.management_code = UPPER\(\$3\)/);
+    assert.deepEqual(queries[1].values, ['found', 'hidden', 'LL-12345', 20, 0]);
+});
+
+test('posts save up to five images, keep the first as cover and reject invalid arrays', async () => {
+    const imageUrls = Array.from({ length: 5 }, (_, i) => `https://example.com/image-${i}.webp`);
+    const valid = {
+        type: 'lost', title: 'Lost a black laptop', description: 'Black laptop',
+        category: 'Thiết bị điện tử', location: 'A21 - USTH',
+        eventDate: '2026-09-16T10:00:00+07:00', phone: '0900000000',
+        highValue: false, verificationQuestions: [], imageUrls
+    };
+    assert.equal(posts.validatePostInput(valid), null);
+    for (const images of [[...imageUrls, imageUrls[0]], null, 'image', ['javascript:alert(1)'], [123], ['']]) {
+        const res = response();
+        await posts.createPost({ body: { ...valid, imageUrls: images } }, res);
+        assert.equal(res.statusCode, 400);
+    }
+    let saved;
+    fakePool.query = async (sql, values) => {
+        saved = { sql, values };
+        return { rows: [{ id: UUID, image_url: values[8], image_urls: values[17] }] };
+    };
+    const res = response();
+    await posts.createPost({ body: valid }, res);
+    assert.equal(res.statusCode, 201);
+    assert.equal(saved.values[8], imageUrls[0]);
+    assert.deepEqual(saved.values[17], imageUrls);
+    assert.match(saved.sql, /image_urls/);
+    assert.deepEqual(res.body.image_urls, imageUrls);
+});
+
+test('editing without new images preserves all images and a new selection replaces them', async () => {
+    const imageUrls = ['https://example.com/one.webp', 'https://example.com/two.webp'];
+    const current = {
+        id: UUID, type: 'lost', title: 'Lost a black laptop', description: 'Black laptop',
+        category: 'Thiết bị điện tử', location: 'A11',
+        event_date: '2026-09-16T10:00:00+07:00', phone: '0900000000',
+        high_value: false, verification_questions: [], status: 'active',
+        management_code: 'LL-SECRET', image_url: imageUrls[0], image_urls: imageUrls
+    };
+    for (const images of [undefined, ['https://example.com/new.webp'], []]) {
+        let saved;
+        fakePool.query = async (sql, values) => {
+            if (sql.startsWith('SELECT')) return { rows: [current] };
+            saved = values;
+            return { rows: [{ id: UUID }] };
+        };
+        const body = { managementCode: 'LL-SECRET', title: 'Lost a laptop again' };
+        if (images !== undefined) body.imageUrls = images;
+        const res = response();
+        await posts.updatePost({ params: { id: UUID }, headers: {}, body }, res);
+        assert.equal(res.statusCode, 200);
+        assert.deepEqual(saved[17], images ?? imageUrls);
+        assert.equal(saved[7], (images ?? imageUrls)[0] || null);
+    }
+});

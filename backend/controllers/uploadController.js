@@ -82,7 +82,7 @@ async function cleanupUnusedImages() {
         const result = await pool.query(`
             SELECT i.path, i.bucket, i.public_url FROM uploaded_images i
             WHERE i.created_at < NOW() - INTERVAL '24 hours'
-              AND NOT EXISTS (SELECT 1 FROM posts p WHERE p.image_url = i.public_url)
+              AND NOT EXISTS (SELECT 1 FROM posts p WHERE p.image_url = i.public_url OR i.public_url = ANY(p.image_urls))
             ORDER BY i.created_at LIMIT 100
         `);
         for (const image of result.rows) {
@@ -92,7 +92,7 @@ async function cleanupUnusedImages() {
                 continue;
             }
             await pool.query(`DELETE FROM uploaded_images i WHERE i.path = $1
-                AND NOT EXISTS (SELECT 1 FROM posts p WHERE p.image_url = i.public_url)`, [image.path]);
+                AND NOT EXISTS (SELECT 1 FROM posts p WHERE p.image_url = i.public_url OR i.public_url = ANY(p.image_urls))`, [image.path]);
         }
     } catch (error) {
         console.error('Unused image cleanup error:', error);

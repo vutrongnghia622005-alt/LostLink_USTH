@@ -145,7 +145,7 @@ body::after{
   backdrop-filter:blur(18px) saturate(145%);
 }
 .stat strong{font-size:29px;color:#0a2b66}
-.stat span{color:#5d718c}
+.stat span{color:#4f5f78}
 
 /* Glass surfaces */
 .feature-card,.category-card,.post-card,.filter-panel,.contact-card,.form-card,.side-card,
@@ -176,7 +176,7 @@ body::after{
 
 /* Section headings */
 .section-heading h2,.page-hero h1{letter-spacing:-.025em;color:#0d285e}
-.section-heading p,.page-hero p{color:#5d708b}
+.section-heading p,.page-hero p{color:#4f5f78}
 
 /* Internal page hero */
 .page-hero{

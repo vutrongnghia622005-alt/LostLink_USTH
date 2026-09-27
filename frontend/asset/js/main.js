@@ -16,6 +16,7 @@
     const state = {
         listingPosts: [],
         listingPage: 1,
+        listingRequest: 0,
         currentDetailPost: null,
         currentEditPost: null
     };
@@ -107,8 +108,7 @@
         if (!grid) return;
 
         try {
-            const posts = await request('/api/posts?status=active&sort=newest');
-            const newest = posts.slice(0, 4);
+            const { posts: newest } = await request('/api/posts?status=active&sort=newest&pageSize=4');
 
             if (newest.length === 0) {
                 showEmptyState(grid, 'Chưa có bài đăng nào.');
@@ -118,7 +118,9 @@
             grid.innerHTML = newest.map(postCardHTML).join('');
             window.lucide?.createIcons();
         } catch (error) {
-            showEmptyState(grid, 'Không thể tải bài đăng. Hãy kiểm tra backend.');
+            grid.innerHTML = `<div class="manage-placeholder" role="status"><i data-lucide="wifi-off"></i><h3>Chưa tải được bài đăng</h3><p>Kết nối đang gián đoạn. Vui lòng thử lại sau ít phút.</p><button type="button" id="retryHomePosts" class="btn btn-secondary" style="margin-top:16px">Thử lại</button></div>`;
+            document.getElementById('retryHomePosts')?.addEventListener('click', loadHomePosts);
+            window.lucide?.createIcons();
         }
     }
 
@@ -132,11 +134,24 @@
         if (!grid) return;
 
         const type = selectedListingType();
+        const version = ++state.listingRequest;
 
         try {
-            state.listingPosts = await request(`/api/posts?type=${type}&status=active&sort=newest`);
+            const params = new URLSearchParams({ type, status: 'active', page: state.listingPage, pageSize: LISTING_PAGE_SIZE,
+                search: document.getElementById('pageSearch')?.value.trim() || '',
+                category: document.getElementById('categoryFilter')?.value || '',
+                location: document.getElementById('locationFilter')?.value || '',
+                time: document.getElementById('timeFilter')?.value || '',
+                sort: (document.getElementById('sortOrder')?.value || 'newest').replace('title-asc', 'title') });
+            const data = await request(`/api/posts?${params}`);
+            if (version !== state.listingRequest) return;
+            state.listingPosts = data.posts;
+            state.listingTotal = data.total;
+            state.listingPage = data.page;
             renderListingPosts();
         } catch (error) {
+            if (version !== state.listingRequest) return;
+            document.getElementById('pagination')?.replaceChildren();
             state.listingPosts = [];
             grid.innerHTML = `<div class="manage-placeholder"><h3>Không thể tải bài đăng</h3><p>${escapeHTML(error.message)}</p><button type="button" id="retryListing" class="btn btn-secondary">Thử lại</button></div>`;
             document.getElementById('retryListing')?.addEventListener('click', loadListingPosts);
@@ -147,111 +162,20 @@
         }
     }
 
-    function timeFilterMatches(post, filterValue) {
-        if (!filterValue) return true;
-
-        const createdAt = new Date(post.created_at).getTime();
-        if (Number.isNaN(createdAt)) return true;
-
-        const day = 24 * 60 * 60 * 1000;
-        const now = Date.now();
-
-        if (filterValue === 'today') return now - createdAt <= day;
-        if (filterValue === '3days') return now - createdAt <= 3 * day;
-        if (filterValue === '7days') return now - createdAt <= 7 * day;
-        if (filterValue === '30days') return now - createdAt <= 30 * day;
-
-        return true;
-    }
-
-    function renderListingPagination(totalItems) {
-        const root = document.getElementById('pagination');
-        if (!root) return;
-        const totalPages = Math.max(1, Math.ceil(totalItems / LISTING_PAGE_SIZE));
-        state.listingPage = Math.min(Math.max(1, state.listingPage), totalPages);
-        if (totalItems <= LISTING_PAGE_SIZE) {
-            root.innerHTML = '';
-            root.hidden = true;
-            return;
-        }
-        root.hidden = false;
-        const items = [];
-        items.push(`<button class="page-btn page-nav" data-page="${state.listingPage - 1}" ${state.listingPage === 1 ? 'disabled' : ''}>‹ <span>Trước</span></button>`);
-        for (let page = 1; page <= totalPages; page += 1) {
-            items.push(`<button class="page-btn ${page === state.listingPage ? 'active' : ''}" data-page="${page}" ${page === state.listingPage ? 'aria-current="page"' : ''}>${page}</button>`);
-        }
-        items.push(`<button class="page-btn page-nav" data-page="${state.listingPage + 1}" ${state.listingPage === totalPages ? 'disabled' : ''}><span>Sau</span> ›</button>`);
-        root.innerHTML = items.join('');
-        root.querySelectorAll('[data-page]').forEach((button) => button.addEventListener('click', () => {
-            if (button.disabled) return;
-            const page = Number(button.dataset.page);
-            if (!Number.isFinite(page) || page < 1 || page > totalPages) return;
-            state.listingPage = page;
-            renderListingPosts();
-            document.querySelector('.results-head')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }));
-    }
-
     function renderListingPosts() {
         const grid = document.getElementById('listingGrid');
         if (!grid) return;
-
-        const search = (document.getElementById('pageSearch')?.value || '').trim().toLowerCase();
-        const category = document.getElementById('categoryFilter')?.value || '';
-        const locationValue = document.getElementById('locationFilter')?.value || '';
-        const time = document.getElementById('timeFilter')?.value || '';
-        const sort = document.getElementById('sortOrder')?.value || 'newest';
-
-        let posts = [...state.listingPosts];
-
-        if (search) {
-            posts = posts.filter((post) => {
-                const text = `${post.title} ${post.description} ${post.location} ${post.category}`.toLowerCase();
-                return text.includes(search);
-            });
-        }
-
-        if (category) {
-            posts = posts.filter((post) => post.category === category);
-        }
-
-        if (locationValue) {
-            posts = posts.filter((post) => post.location === locationValue);
-        }
-
-        if (time) {
-            posts = posts.filter((post) => timeFilterMatches(post, time));
-        }
-
-        posts.sort((a, b) => {
-            if (sort === 'oldest') {
-                return new Date(a.created_at) - new Date(b.created_at);
-            }
-
-            if (sort === 'title-asc') {
-                return a.title.localeCompare(b.title, 'vi');
-            }
-
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
-
-        const resultCount = document.getElementById('resultCount');
-        if (resultCount) {
-            resultCount.textContent = `${posts.length} kết quả`;
-        }
-
+        const totalPages = Math.max(1, Math.ceil(state.listingTotal / LISTING_PAGE_SIZE));
+        const count = document.getElementById('resultCount');
+        if (count) count.textContent = `${state.listingTotal} kết quả · Trang ${state.listingPage}/${totalPages}`;
         const empty = document.getElementById('emptyResults');
-        if (empty) {
-            empty.hidden = posts.length > 0;
-        }
-
-        const totalPages = Math.max(1, Math.ceil(posts.length / LISTING_PAGE_SIZE));
-        state.listingPage = Math.min(Math.max(1, state.listingPage), totalPages);
-        const startIndex = (state.listingPage - 1) * LISTING_PAGE_SIZE;
-        const visiblePosts = posts.slice(startIndex, startIndex + LISTING_PAGE_SIZE);
-        if (resultCount && posts.length > 0) resultCount.textContent = `${posts.length} kết quả · Trang ${state.listingPage}/${totalPages}`;
-        grid.innerHTML = visiblePosts.map(postCardHTML).join('');
-        renderListingPagination(posts.length);
+        if (empty) empty.hidden = state.listingTotal > 0;
+        grid.innerHTML = state.listingPosts.map(postCardHTML).join('');
+        const root = document.getElementById('pagination');
+        if (root) window.LostLink.renderPagination(root, { page: state.listingPage, totalPages }, (page) => {
+            state.listingPage = page;
+            loadListingPosts();
+        });
         window.lucide?.createIcons();
     }
 
@@ -275,7 +199,7 @@
             if (!element) return;
 
             const eventName = element.tagName === 'INPUT' ? 'input' : 'change';
-            element.addEventListener(eventName, () => { state.listingPage = 1; renderListingPosts(); });
+            element.addEventListener(eventName, window.LostLink.debounce(() => { state.listingPage = 1; loadListingPosts(); }));
         });
 
         const reset = () => {
@@ -294,7 +218,7 @@
             if (location.search) history.replaceState(null, '', location.pathname);
 
             state.listingPage = 1;
-            renderListingPosts();
+            loadListingPosts();
         };
 
         document.getElementById('resetFilters')?.addEventListener('click', reset);
@@ -324,26 +248,37 @@
         return questions;
     }
 
-    async function uploadSelectedImage() {
-        const input = document.getElementById('imageInput');
-        const file = input?.files?.[0];
-
-        if (!file) {
-            return null;
-        }
-
-        const formData = new FormData();
-        formData.append('image', file);
-
-        const data = await request('/api/uploads', {
-            method: 'POST',
-            body: formData
-        });
-
-        return data.imageUrl;
+    function postImages(post) {
+        return post?.image_urls?.length ? post.image_urls : (post?.image_url ? [post.image_url] : []);
     }
 
-    function getPostFormData(imageUrl) {
+    function renderImagePreviews(urls) {
+        const preview = document.getElementById('imagePreviews');
+        if (!preview) return;
+        preview.replaceChildren();
+        urls.forEach((url, index) => {
+            const image = document.createElement('img');
+            image.src = url;
+            image.alt = `Ảnh bài đăng ${index + 1}`;
+            preview.appendChild(image);
+        });
+    }
+
+    async function uploadSelectedImages() {
+        const files = [...(document.getElementById('imageInput')?.files || [])];
+        if (!files.length) return null;
+        if (files.length > 5) throw new Error('Chỉ được chọn tối đa 5 ảnh.');
+        const urls = [];
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('image', file);
+            const data = await request('/api/uploads', { method: 'POST', body: formData });
+            urls.push(data.imageUrl);
+        }
+        return urls;
+    }
+
+    function getPostFormData(imageUrls) {
         const checkedType = document.querySelector('input[name="type"]:checked')?.value || 'LOST';
 
         return {
@@ -354,7 +289,7 @@
             eventDate: new Date(document.getElementById('postEventTime').value).toISOString(),
             locationDetail: document.getElementById('postLocationDetail').value.trim(),
             description: document.getElementById('postDescription').value.trim(),
-            imageUrl: imageUrl || state.currentEditPost?.image_url || '',
+            imageUrls: imageUrls || postImages(state.currentEditPost),
             phone: document.getElementById('postPhone').value.trim(),
             email: document.getElementById('postEmail').value.trim(),
             highValue: Boolean(document.getElementById('postHighValue')?.checked),
@@ -387,11 +322,14 @@
             const post = posts.find((item) => item.id === postId);
 
             if (!post) {
-                alert('Không tìm thấy bài của bạn để sửa.');
+                window.LostLink.showMessage('Không tìm thấy bài của bạn để sửa.', document.getElementById('postForm'));
                 return;
             }
 
             state.currentEditPost = post;
+            renderImagePreviews(postImages(post));
+            const uploadNote = document.querySelector('.upload-note');
+            if (uploadNote) uploadNote.textContent += ' · Chọn ảnh mới sẽ thay thế ảnh hiện tại.';
 
             const typeValue = String(post.type).toUpperCase();
             const typeInput = document.querySelector(`input[name="type"][value="${typeValue}"]`);
@@ -443,7 +381,7 @@
             const submitText = document.getElementById('postSubmitText');
             if (submitText) submitText.textContent = 'Lưu thay đổi';
         } catch (error) {
-            alert(error.message);
+            window.LostLink.showMessage(error.message);
         }
     }
 
@@ -457,13 +395,13 @@
         if (submitButton) submitButton.disabled = true;
 
         try {
-            let imageUrl = null;
+            let imageUrls = null;
 
             if (document.getElementById('imageInput')?.files?.[0]) {
-                imageUrl = await uploadSelectedImage();
+                imageUrls = await uploadSelectedImages();
             }
 
-            const body = getPostFormData(imageUrl);
+            const body = getPostFormData(imageUrls);
             const params = new URLSearchParams(location.search);
             const editId = params.get('edit');
             const managementCode = editId ? sessionStorage.getItem(codeKey(editId)) || '' : '';
@@ -489,7 +427,7 @@
             location.href = `success.html?id=${encodeURIComponent(createdPost.id)}`;
             return;
         } catch (error) {
-            alert(`Không thể lưu bài: ${error.message}`);
+            window.LostLink.showMessage(`Không thể lưu bài: ${error.message}`, form);
         } finally {
             if (submitButton) submitButton.disabled = false;
         }
@@ -512,15 +450,27 @@
         }
 
         const imageInput = document.getElementById('imageInput');
-        const preview = document.getElementById('imagePreview');
-
+        const uploadNote = imageInput?.closest('.upload-box')?.querySelector('.upload-note');
+        const defaultUploadNote = uploadNote?.textContent;
+        let previewUrls = [];
         imageInput?.addEventListener('change', () => {
-            const file = imageInput.files?.[0];
-            if (!file || !preview) return;
-
-            preview.src = URL.createObjectURL(file);
-            preview.style.display = 'block';
+            previewUrls.forEach((url) => URL.revokeObjectURL(url));
+            previewUrls = [];
+            const files = [...imageInput.files];
+            const error = files.length > 5 ? 'Chỉ được chọn tối đa 5 ảnh.' :
+                files.some((file) => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024)
+                    ? 'Chọn ảnh JPG, PNG hoặc WEBP, mỗi ảnh không quá 5 MB.' : '';
+            if (error) {
+                imageInput.value = '';
+                if (uploadNote) uploadNote.textContent = error;
+                renderImagePreviews(postImages(state.currentEditPost));
+                return;
+            }
+            previewUrls = files.map((file) => URL.createObjectURL(file));
+            renderImagePreviews(files.length ? previewUrls : postImages(state.currentEditPost));
+            if (uploadNote) uploadNote.textContent = files.length ? `Đã chọn ${files.length}/5 ảnh · Mỗi ảnh tối đa 5 MB` : defaultUploadNote;
         });
+        window.addEventListener('pagehide', () => previewUrls.forEach((url) => URL.revokeObjectURL(url)));
     }
 
     function setDetailMeta(post) {
@@ -600,6 +550,32 @@
             if (image) {
                 image.src = fallbackImage(post);
                 image.alt = post.title;
+                const urls = postImages(post);
+                if (urls.length > 1) {
+                    const thumbs = document.createElement('div');
+                    thumbs.className = 'thumb-row';
+                    urls.forEach((url, index) => {
+                        const button = document.createElement('button');
+                        button.type = 'button';
+                        button.className = `thumb${index === 0 ? ' active' : ''}`;
+                        button.setAttribute('aria-label', `Xem ảnh ${index + 1}`);
+                        button.setAttribute('aria-pressed', String(index === 0));
+                        const thumbnail = document.createElement('img');
+                        thumbnail.src = url;
+                        thumbnail.alt = '';
+                        button.appendChild(thumbnail);
+                        button.addEventListener('click', () => {
+                            image.src = url;
+                            thumbs.querySelectorAll('button').forEach((item) => {
+                                item.classList.toggle('active', item === button);
+                                item.setAttribute('aria-pressed', String(item === button));
+                            });
+                        });
+                        thumbs.appendChild(button);
+                    });
+                    image.after(thumbs);
+                }
+
             }
 
             const badge = document.getElementById('detailTypeBadge');
@@ -637,7 +613,7 @@
 
         try {
             const oppositeType = currentPost.type === 'lost' ? 'found' : 'lost';
-            const posts = await request(`/api/posts?type=${oppositeType}&status=active&sort=newest`);
+            const { posts } = await request(`/api/posts?type=${oppositeType}&status=active&sort=newest&pageSize=4`);
             const suggestions = posts.filter((post) => post.id !== currentPost.id).slice(0, 4);
             grid.innerHTML = suggestions.map(postCardHTML).join('');
         } catch (error) {
@@ -655,7 +631,7 @@
                     });
                 } else {
                     await navigator.clipboard.writeText(location.href);
-                    alert('Đã sao chép link bài đăng.');
+                    window.LostLink.showMessage('Đã sao chép link bài đăng.');
                 }
             } catch (error) {
                 // User may cancel the native share dialog. No action is needed.
@@ -730,7 +706,7 @@
                 success.hidden = false;
                 success.querySelector('p').textContent = `Đã gửi phản hồi. Mã theo dõi: ${data.tracking_code}`;
             } catch (error) {
-                alert(error.message);
+                window.LostLink.showMessage(error.message);
             }
         });
     }
@@ -784,7 +760,7 @@
                     });
                     loadMyPostsAndFindByCode(normalized);
                 } catch (error) {
-                    alert(error.message);
+                    window.LostLink.showMessage(error.message);
                 }
             });
 
@@ -799,7 +775,7 @@
                     sessionStorage.removeItem(codeKey(post.id));
                     list.innerHTML = '<div class="manage-placeholder"><h3>Đã xóa bài đăng.</h3></div>';
                 } catch (error) {
-                    alert(error.message);
+                    window.LostLink.showMessage(error.message);
                 }
             });
         } catch (error) {
@@ -844,9 +820,22 @@
             codeElement.textContent = 'Không có mã quản lý';
             document.getElementById('copyCodeBtn')?.setAttribute('hidden', '');
             document.getElementById('manageCreatedPost')?.setAttribute('hidden', '');
+            document.getElementById('downloadCodeBtn')?.setAttribute('hidden', '');
             return;
         }
         codeElement.textContent = code;
+        document.getElementById('downloadCodeBtn')?.addEventListener('click', () => {
+            const content = `LostLink USTH\nMã quản lý: ${code}\nID bài đăng: ${id}\nTrang quản lý: ${new URL('my-posts.html', location.href).href}\nGiữ bí mật mã này. Nhập mã ở trang Tin của tôi để sửa hoặc xóa bài.\n`;
+            const url = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `LostLink-${id}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        });
+
 
         const view = document.getElementById('viewCreatedPost');
         if (view && id) view.href = `detail.html?id=${encodeURIComponent(id)}`;
@@ -859,7 +848,7 @@
                 await navigator.clipboard.writeText(code);
                 document.getElementById('copyCodeStatus').textContent = 'Đã sao chép mã quản lý.';
             } catch (error) {
-                prompt('Sao chép mã quản lý:', code);
+                document.getElementById('copyCodeStatus').textContent = 'Không thể sao chép. Hãy chọn mã hoặc tải tệp mã quản lý.';
             }
         });
     }
@@ -957,8 +946,8 @@
         }, true);
         setupCatalog();
         loadHomePosts();
-        loadListingPosts();
         setupListingFilters();
+        loadListingPosts();
         setupPostForm();
         loadDetailPost();
         setupShareButton();

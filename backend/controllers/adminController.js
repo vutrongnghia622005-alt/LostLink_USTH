@@ -1,3 +1,4 @@
+const { SEARCH_VECTOR, pagination, pagedPosts } = require('../lib/postSearch');
 const pool = require('../config/database');
 const { isUuid, databaseError } = require('../lib/validation');
 
@@ -49,17 +50,33 @@ async function getDashboard(req, res) {
 }
 
 async function getPosts(req, res) {
+    const query = req.query || {};
+    const paging = pagination(query);
+    if (!paging) return res.status(400).json({ message: 'Invalid pagination.' });
+    const values = [];
+    const conditions = [];
+    for (const [field, allowed] of Object.entries({ type: ['lost', 'found'], status: ['active', 'resolved', 'closed', 'hidden'] })) {
+        if (!query[field]) continue;
+        if (!allowed.includes(query[field])) return res.status(400).json({ message: `Invalid ${field}.` });
+        values.push(query[field]);
+        conditions.push(`p.${field} = $${values.length}`);
+    }
+    const search = String(query.search || '').trim();
+    if (search.length > 200) return res.status(400).json({ message: 'Invalid search.' });
+    if (search) {
+        values.push(search);
+        conditions.push(`(${SEARCH_VECTOR} @@ plainto_tsquery('simple', $${values.length}) OR p.management_code = UPPER($${values.length}))`);
+    }
     try {
-        const result = await pool.query(`
-            SELECT p.*,
-                   COALESCE(u.full_name, p.reporter_name, 'Khách') AS author_name,
-                   COALESCE(u.email, p.email) AS author_email
-            FROM posts p
-            LEFT JOIN users u ON u.id = p.user_id
-            ORDER BY p.created_at DESC
-        `);
-
-        res.json(result.rows);
+        const result = await pagedPosts(pool, {
+            fields: `p.id, p.title, p.type, p.status, p.category, p.location, p.description,
+                p.management_code, p.created_at,
+                COALESCE(u.full_name, p.reporter_name, 'Khách') AS author_name,
+                COALESCE(u.email, p.email) AS author_email`,
+            where: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '',
+            values, order: 'ORDER BY p.created_at DESC, p.id DESC', paging
+        });
+        res.json(result);
     } catch (error) {
         console.error('Admin get posts error:', error);
         res.status(500).json({ message: 'Internal server error.' });

@@ -158,7 +158,7 @@ body[data-wallpaper="custom"]::before {
 
 .portal-status-card div span {
   display: block;
-  color: #7b8b9f;
+  color: #4f5f78;
   font-size: 11px;
   margin-top: 4px
 }
@@ -222,7 +222,7 @@ body[data-wallpaper="custom"]::before {
 .return-rate-card>div:first-child {
   display: flex;
   justify-content: space-between;
-  color: #58708d
+  color: #4f5f78
 }
 
 .return-rate-card strong {
@@ -300,7 +300,7 @@ body[data-wallpaper="custom"]::before {
 }
 
 .portal-checkbox small {
-  color: #8190a3;
+  color: #4f5f78;
   font-size: 11px;
   margin-top: 2px
 }
@@ -330,7 +330,7 @@ body[data-wallpaper="custom"]::before {
 
 .challenge-head span {
   font-size: 11px;
-  color: #7488a2
+  color: #4f5f78
 }
 
 .portal-challenges label {
@@ -477,7 +477,7 @@ body[data-wallpaper="custom"]::before {
 
 .search-code {
   font-size: 10px;
-  color: #8190a3;
+  color: #4f5f78;
   font-family: monospace
 }
 
@@ -492,7 +492,7 @@ body[data-wallpaper="custom"]::before {
 
 .search-result-body p {
   margin: 0;
-  color: #697c94;
+  color: #4f5f78;
   line-height: 1.5
 }
 
@@ -501,7 +501,7 @@ body[data-wallpaper="custom"]::before {
   gap: 12px;
   flex-wrap: wrap;
   margin-top: 10px;
-  color: #72859d;
+  color: #4f5f78;
   font-size: 11px
 }
 
@@ -587,7 +587,7 @@ body[data-wallpaper="custom"]::before {
 
 .claim-track-card p {
   margin: 0;
-  color: #718198
+  color: #4f5f78
 }
 
 .claim-pickup {
@@ -771,7 +771,7 @@ body[data-wallpaper="custom"]::before {
 
 .security-timeline-card p {
   margin: 0;
-  color: #6c7e94
+  color: #4f5f78
 }
 
 .map-zoom-controls {
@@ -941,12 +941,12 @@ body[data-wallpaper="custom"]::before {
 }
 
 
-/* ===== Upload image: single-line layout ===== */
+/* Upload controls wrap without clipping on narrow screens. */
 .upload-box.upload-box-inline {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  flex-wrap: nowrap !important;
+  flex-wrap: wrap !important;
   gap: 14px !important;
   width: 100% !important;
   min-height: 86px !important;
@@ -966,16 +966,18 @@ body[data-wallpaper="custom"]::before {
 .upload-box.upload-box-inline>strong {
   display: inline-block !important;
   margin: 0 !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
   line-height: 1.2 !important;
 }
 
 .upload-box.upload-box-inline .upload-note {
   display: inline-block !important;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   margin: 0 !important;
-  color: #7a879d !important;
+  color: #4f5f78 !important;
   font-size: 13px !important;
-  white-space: nowrap !important;
+  white-space: normal !important;
   line-height: 1.2 !important;
 }
 
@@ -1143,7 +1145,7 @@ body[data-wallpaper="custom"]::before {
 
 /* Empty/error state on the homepage should not visually merge with the photo. */
 #homePostGrid .manage-placeholder {
-  min-height: 190px;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1161,7 +1163,7 @@ body[data-wallpaper="custom"]::before {
 #homePostGrid .manage-placeholder h3 {
   margin: 8px 0 0 !important;
   color: #153b6e !important;
-  font-size: 22px !important;
+  font-size: 20px !important;
   font-weight: 800 !important;
   line-height: 1.35 !important;
 }

@@ -128,7 +128,7 @@
                     });
                     loadClaims();
                 } catch (error) {
-                    alert(error.message);
+                    window.LostLink.showMessage(error.message);
                 }
             });
         });

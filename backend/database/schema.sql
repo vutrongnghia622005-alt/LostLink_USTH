@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS posts (
     location_detail VARCHAR(220),
     event_date TIMESTAMPTZ NOT NULL,
     image_url TEXT,
+    image_urls TEXT[] NOT NULL DEFAULT '{}'::text[] CHECK (cardinality(image_urls) <= 5),
     status VARCHAR(20) NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'resolved', 'closed', 'hidden')),
     phone VARCHAR(80),
     email VARCHAR(180),
@@ -90,3 +91,10 @@ ALTER TABLE posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE claims ENABLE ROW LEVEL SECURITY;
 ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE uploaded_images ENABLE ROW LEVEL SECURITY;
+
+-- Must match the expression in backend/lib/postSearch.js.
+CREATE INDEX IF NOT EXISTS posts_search_idx ON posts USING GIN (
+    to_tsvector('simple', coalesce(title, '') || ' ' || coalesce(description, '') || ' ' ||
+        coalesce(location, '') || ' ' || coalesce(category, '') || ' ' || coalesce(location_detail, ''))
+);
+CREATE INDEX IF NOT EXISTS posts_status_created_id_idx ON posts(status, created_at DESC, id DESC);

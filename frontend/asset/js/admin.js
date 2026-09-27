@@ -210,31 +210,14 @@
     }
 
     let adminPosts = [];
+    let adminPage = 1;
+    let adminRequestVersion = 0;
 
     function renderPostsTable() {
         const tbody = document.getElementById('adminPostsBody');
         if (!tbody) return;
 
-        const search = (document.getElementById('adminPostSearch')?.value || '').trim().toLowerCase();
-        const type = (document.getElementById('adminPostType')?.value || 'ALL').toLowerCase();
-        const status = (document.getElementById('adminPostStatus')?.value || 'ALL').toLowerCase();
-
-        let posts = [...adminPosts];
-
-        if (search) {
-            posts = posts.filter((post) => {
-                const text = `${post.title} ${post.location} ${post.category} ${post.management_code}`.toLowerCase();
-                return text.includes(search);
-            });
-        }
-
-        if (type !== 'all') {
-            posts = posts.filter((post) => post.type === type);
-        }
-
-        if (status !== 'all') {
-            posts = posts.filter((post) => post.status === status);
-        }
+        const posts = adminPosts;
 
         tbody.innerHTML = posts.length > 0
             ? posts.map((post) => `
@@ -272,11 +255,32 @@
     async function loadAdminPosts() {
         if (!document.getElementById('adminPostsBody')) return;
 
+        const version = ++adminRequestVersion;
         try {
-            adminPosts = await request('/api/admin/posts');
+            const params = new URLSearchParams({ page: adminPage, pageSize: 20,
+                search: document.getElementById('adminPostSearch')?.value.trim() || '' });
+            for (const [field, id] of [['type', 'adminPostType'], ['status', 'adminPostStatus']]) {
+                const value = document.getElementById(id)?.value.toLowerCase();
+                if (value && value !== 'all') params.set(field, value);
+            }
+            const data = await request(`/api/admin/posts?${params}`);
+            if (version !== adminRequestVersion) return;
+            adminPosts = data.posts;
+            adminPage = data.page;
+            let pagination = document.getElementById('adminPostPagination');
+            if (!pagination) {
+                pagination = document.createElement('nav');
+                pagination.id = 'adminPostPagination';
+                pagination.className = 'pagination';
+                pagination.setAttribute('aria-label', 'Phân trang bài đăng');
+                document.getElementById('adminPostsBody').closest('table').parentElement.after(pagination);
+            }
+            window.LostLink.renderPagination(pagination, data, (page) => { adminPage = page; loadAdminPosts(); });
             renderPostsTable();
         } catch (error) {
-            console.error(error);
+            if (version !== adminRequestVersion) return;
+            document.getElementById('adminPostPagination')?.replaceChildren();
+            window.LostLink.showMessage(error.message, document.getElementById('adminPostsBody').closest('.admin-card'));
         }
     }
 
@@ -326,7 +330,7 @@
                     toast(nextStatus === 'hidden' ? 'Đã ẩn bài.' : 'Đã hiện bài.');
                     loadAdminPosts();
                 } catch (error) {
-                    alert(error.message);
+                    window.LostLink.showMessage(error.message);
                 }
             });
         });
@@ -342,7 +346,7 @@
                     toast('Đã xóa bài.');
                     loadAdminPosts();
                 } catch (error) {
-                    alert(error.message);
+                    window.LostLink.showMessage(error.message);
                 }
             });
         });
@@ -354,7 +358,7 @@
         ids.forEach((id) => {
             const element = document.getElementById(id);
             if (!element) return;
-            element.addEventListener(element.tagName === 'INPUT' ? 'input' : 'change', renderPostsTable);
+            element.addEventListener(element.tagName === 'INPUT' ? 'input' : 'change', window.LostLink.debounce(() => { adminPage = 1; loadAdminPosts(); }));
         });
     }
 
@@ -382,8 +386,8 @@
                     </div>
                     <div class="feedback-message">${escapeHTML(item.message)}</div>
                     <div class="admin-reply-box">
-                        <label>Phản hồi của Admin</label>
-                        <textarea data-feedback-reply="${item.id}">${escapeHTML(item.admin_reply || '')}</textarea>
+                        <label for="feedbackReply-${item.id}">Phản hồi của Admin</label>
+                        <textarea id="feedbackReply-${item.id}" data-feedback-reply="${item.id}">${escapeHTML(item.admin_reply || '')}</textarea>
                     </div>
                     <div class="admin-actions">
                         <button class="admin-btn" data-feedback-status="read" data-feedback-id="${item.id}">Đã đọc</button>
@@ -425,7 +429,7 @@
                     toast('Đã cập nhật phản hồi.');
                     loadFeedback();
                 } catch (error) {
-                    alert(error.message);
+                    window.LostLink.showMessage(error.message);
                 }
             });
         });

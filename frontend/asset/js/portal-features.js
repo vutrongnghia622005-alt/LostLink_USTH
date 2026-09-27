@@ -148,7 +148,7 @@
 
                 window.lucide?.createIcons();
             } catch (error) {
-                alert(error.message);
+                window.LostLink.showMessage(error.message);
             }
         });
 
@@ -277,13 +277,13 @@
 
         try {
             const [lost, found] = await Promise.all([
-                request('/api/posts?type=lost&status=active'),
-                request('/api/posts?type=found&status=active')
+                request('/api/posts?type=lost&status=active&pageSize=1'),
+                request('/api/posts?type=found&status=active&pageSize=1')
             ]);
 
             const values = {
-                portalLostCount: lost.length,
-                portalFoundCount: found.length
+                portalLostCount: lost.total,
+                portalFoundCount: found.total
             };
 
             Object.entries(values).forEach(([id, value]) => {

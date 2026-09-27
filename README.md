@@ -73,3 +73,11 @@ backend/
 
 ## UI readability update
 - Home section headings, sorting text, links, category cards, and empty states were adjusted for stronger contrast over the campus background.
+
+## Cập nhật sửa lỗi 27/09/2026
+
+- Database đang sử dụng: chạy `backend/database/upgrade-2026-09-27.sql` để thêm chỉ mục tìm kiếm, phân trang và cột `image_urls` lưu tối đa 5 ảnh (giữ ảnh cũ). Database mới đã có các chỉ mục trong `schema.sql`.
+- API danh sách `/api/posts` và `/api/admin/posts` trả `{ posts, total, page, pageSize, totalPages }`; mặc định 20 bài, tối đa 100 bài/trang. Cần triển khai backend và frontend cùng phiên bản.
+- Tìm kiếm toàn văn dùng cấu hình PostgreSQL `simple`, khớp các từ trong tên, mô tả, danh mục và địa điểm; không còn khớp một đoạn bất kỳ bên trong từ. Admin vẫn tìm được mã quản lý chính xác.
+- Ô ảnh cho chọn tối đa 5 ảnh JPG/PNG/WEBP, mỗi ảnh tối đa 5 MB; ảnh đầu là ảnh bìa. Khi sửa, chọn ảnh mới sẽ thay thế toàn bộ ảnh cũ.
+- Sau khi đăng, bấm **Tải mã quản lý (.txt)** và lưu tệp. Trên máy khác, mở trang **Tin của tôi** rồi nhập mã từ tệp. Giữ bí mật mã này.

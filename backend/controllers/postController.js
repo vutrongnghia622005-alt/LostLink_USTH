@@ -1,4 +1,5 @@
 const crypto = require('crypto');
+const { SEARCH_VECTOR, pagination, pagedPosts } = require('../lib/postSearch');
 const pool = require('../config/database');
 const catalog = require('../../frontend/asset/js/catalog');
 const { isUuid, isText, isOptionalText, databaseError } = require('../lib/validation');
@@ -14,6 +15,7 @@ const PUBLIC_POST_FIELDS = `
     p.location_detail,
     p.event_date,
     p.image_url,
+    p.image_urls,
     p.status,
     p.phone,
     p.email,
@@ -69,11 +71,18 @@ function validatePostInput(body) {
     if (!catalog.locations.includes(body.location)) return 'Invalid location.';
     if (typeof body.eventDate !== 'string' || !/(?:Z|[+-]\d{2}:\d{2})$/i.test(body.eventDate) ||
         Number.isNaN(Date.parse(body.eventDate))) return 'Event date must include a timezone.';
-    if (!isText(body.phone, 1, 80)) return 'Contact number is required (maximum 80 characters).';
+    if (typeof body.phone !== 'string' || body.phone.length > 80 || !/^[0-9 +\-]+$/.test(body.phone) ||
+        !/^[0-9]{8,15}$/.test(body.phone.replace(/[^0-9]/g, ''))) {
+        return 'Số điện thoại phải có 8–15 chữ số; chỉ dùng chữ số, dấu cách, + và -.';
+    }
     if (!isOptionalText(body.email, 180) ||
         (body.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(body.email))) return 'Invalid email.';
     if (!isOptionalText(body.imageUrl, 2000) ||
         (body.imageUrl && !/^https?:\/\//i.test(body.imageUrl))) return 'Invalid image URL.';
+    if (body.imageUrls !== undefined && (!Array.isArray(body.imageUrls) || body.imageUrls.length > 5 ||
+        body.imageUrls.some((url) => !isText(url, 1, 2000) || !/^https?:\/\//i.test(url)))) {
+        return 'Chỉ được đăng tối đa 5 ảnh với đường dẫn hợp lệ.';
+    }
     for (const [field, max] of Object.entries({
         locationDetail: 220, custodyLocation: 220, reporterName: 120, reporterRole: 40
     })) {
@@ -101,12 +110,13 @@ function postInput(body, current = null) {
         category: catalog.canonicalCategory(current.category),
         location: catalog.canonicalLocation(current.location),
         locationDetail: current.location_detail, eventDate: new Date(current.event_date).toISOString(),
+        imageUrls: current.image_urls?.length ? current.image_urls : (current.image_url ? [current.image_url] : []),
         imageUrl: current.image_url, phone: current.phone, email: current.email,
         highValue: current.high_value, custodyLocation: current.custody_location,
         reporterName: current.reporter_name, reporterRole: current.reporter_role,
         verificationQuestions: current.verification_questions
     } : {
-        highValue: false, verificationQuestions: [], imageUrl: '', email: '',
+        highValue: false, verificationQuestions: [], imageUrls: [], imageUrl: '', email: '',
         locationDetail: '', custodyLocation: '', reporterName: '', reporterRole: ''
     };
     const fields = Object.keys(existing).concat(['type', 'title', 'description', 'category', 'location', 'eventDate', 'phone']);
@@ -117,10 +127,16 @@ function postInput(body, current = null) {
     if (typeof result.type === 'string') result.type = normalizeType(result.type);
     if (typeof result.category === 'string') result.category = catalog.canonicalCategory(result.category.trim());
     if (typeof result.location === 'string') result.location = catalog.canonicalLocation(result.location.trim());
+    if (Object.hasOwn(body, 'imageUrl') && !Object.hasOwn(body, 'imageUrls')) {
+        result.imageUrls = body.imageUrl ? [body.imageUrl] : [];
+    }
+    if (Array.isArray(result.imageUrls)) result.imageUrl = result.imageUrls[0] || '';
     return result;
 }
 
 async function getPosts(req, res) {
+    const paging = pagination(req.query);
+    if (!paging) return res.status(400).json({ message: 'Invalid pagination.' });
     const type = normalizeType(req.query.type);
     const search = String(req.query.search || '').trim();
     const category = String(req.query.category || '').trim();
@@ -151,13 +167,8 @@ async function getPosts(req, res) {
     }
 
     if (search) {
-        values.push(`%${search}%`);
-        conditions.push(`(
-            p.title ILIKE $${values.length}
-            OR p.description ILIKE $${values.length}
-            OR p.location ILIKE $${values.length}
-            OR p.category ILIKE $${values.length}
-        )`);
+        values.push(search);
+        conditions.push(`${SEARCH_VECTOR} @@ plainto_tsquery('simple', $${values.length})`);
     }
 
     if (category) {
@@ -174,6 +185,18 @@ async function getPosts(req, res) {
         conditions.push(`p.location = ANY($${values.length}::text[])`);
     }
 
+    const timeDays = { today: 1, '3days': 3, '7days': 7, '30days': 30 };
+    if (req.query.time) {
+        if (!Object.hasOwn(timeDays, req.query.time)) return res.status(400).json({ message: 'Invalid time filter.' });
+        values.push(timeDays[req.query.time]);
+        conditions.push(`p.created_at >= NOW() - $${values.length} * INTERVAL '1 day'`);
+    }
+    if (req.query.highValue != null) {
+        if (!['true', 'false'].includes(req.query.highValue)) return res.status(400).json({ message: 'Invalid high value filter.' });
+        values.push(req.query.highValue === 'true');
+        conditions.push(`p.high_value = $${values.length}`);
+    }
+
     values.push(requestedStatus);
     conditions.push(`p.status = $${values.length}`);
 
@@ -186,16 +209,13 @@ async function getPosts(req, res) {
     if (sort === 'title') orderBy = 'ORDER BY p.title ASC, p.id ASC';
 
     try {
-        const result = await pool.query(
-            `SELECT ${PUBLIC_POST_FIELDS}
-             FROM posts p
-             LEFT JOIN users u ON u.id = p.user_id
-             ${whereClause}
-             ${orderBy}`,
-            values
-        );
-
-        res.json(result.rows.map(hidePrivatePostData));
+        const result = await pagedPosts(pool, {
+            fields: `p.id, p.type, p.title, LEFT(p.description, 240) AS description,
+                p.category, p.location, p.image_url, p.status, p.high_value, p.created_at,
+                COALESCE(u.full_name, p.reporter_name, 'Khách') AS author_name`,
+            where: whereClause, values, order: orderBy, paging
+        });
+        res.json({ ...result, posts: result.posts.map(hidePrivatePostData) });
     } catch (error) {
         databaseError(res, error, 'Get posts error:');
     }
@@ -278,11 +298,12 @@ async function createPost(req, res) {
                 reporter_name,
                 reporter_role,
                 verification_questions,
-                management_code
+                management_code,
+                image_urls
              )
              VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, 'active',
-                $10, $11, $12, $13, $14, $15, $16::jsonb, $17
+                $10, $11, $12, $13, $14, $15, $16::jsonb, $17, $18::text[]
              )
              RETURNING *`,
             [
@@ -302,7 +323,8 @@ async function createPost(req, res) {
                 input.reporterName?.trim() || null,
                 input.reporterRole?.trim() || null,
                 JSON.stringify(input.verificationQuestions),
-                makeManagementCode()
+                makeManagementCode(),
+                input.imageUrls
             ]
         );
 
@@ -365,6 +387,7 @@ async function updatePost(req, res) {
                 location_detail = $6,
                 event_date = $7,
                 image_url = $8,
+                image_urls = $18::text[],
                 phone = $9,
                 email = $10,
                 high_value = $11,
@@ -381,7 +404,7 @@ async function updatePost(req, res) {
                 input.imageUrl?.trim() || null, input.phone.trim(), input.email?.trim() || null,
                 input.highValue, input.custodyLocation?.trim() || null,
                 input.reporterName?.trim() || null, input.reporterRole?.trim() || null,
-                JSON.stringify(input.verificationQuestions), postId, isAdmin
+                JSON.stringify(input.verificationQuestions), postId, isAdmin, input.imageUrls
             ]
         );
 

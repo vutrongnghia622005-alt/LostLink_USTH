@@ -10,7 +10,7 @@
     } = window.LostLink;
 
     const searchState = {
-        posts: []
+        posts: [], page: 1, requestVersion: 0
     };
 
     function searchResultHTML(post) {
@@ -40,7 +40,7 @@
         `;
     }
 
-    function renderSearchResults() {
+    async function renderSearchResults() {
         const results = document.getElementById('completeSearchResults');
         if (!results) return;
 
@@ -51,45 +51,34 @@
         const highValueOnly = Boolean(document.getElementById('completeSearchHigh')?.checked);
         const sort = document.getElementById('completeSearchSort')?.value || 'newest';
 
-        let posts = [...searchState.posts];
-
-        if (query) {
-            posts = posts.filter((post) => {
-                const text = `${post.title} ${post.description} ${post.location} ${post.category}`.toLowerCase();
-                return text.includes(query);
-            });
+        const params = new URLSearchParams({ search: query, category, location: locationValue,
+            type: type.toLowerCase(), sort, status: 'active', page: searchState.page, pageSize: 10 });
+        if (highValueOnly) params.set('highValue', 'true');
+        const version = ++searchState.requestVersion;
+        let data;
+        try {
+            data = await request(`/api/posts?${params}`);
+        } catch (error) {
+            if (version !== searchState.requestVersion) return;
+            results.innerHTML = `<div class="portal-empty-state is-error"><h3>Không thể tải dữ liệu tìm kiếm</h3><p>${escapeHTML(error.message)}</p></div>`;
+            document.getElementById('searchPagination')?.replaceChildren();
+            return;
         }
-
-        if (category) {
-            posts = posts.filter((post) => post.category === category);
+        if (version !== searchState.requestVersion) return;
+        searchState.page = data.page;
+        const posts = data.posts;
+        let pagination = document.getElementById('searchPagination');
+        if (!pagination) {
+            pagination = document.createElement('nav');
+            pagination.id = 'searchPagination';
+            pagination.className = 'pagination';
+            pagination.setAttribute('aria-label', 'Phân trang tìm kiếm');
+            results.after(pagination);
         }
-
-        if (locationValue) {
-            posts = posts.filter((post) => post.location === locationValue);
-        }
-
-        if (type) {
-            posts = posts.filter((post) => post.type === type.toLowerCase());
-        }
-
-        if (highValueOnly) {
-            posts = posts.filter((post) => post.high_value);
-        }
-
-        posts.sort((a, b) => {
-            if (sort === 'oldest') {
-                return new Date(a.created_at) - new Date(b.created_at);
-            }
-
-            if (sort === 'title') {
-                return String(a.title).localeCompare(String(b.title), 'vi');
-            }
-
-            return new Date(b.created_at) - new Date(a.created_at);
-        });
+        window.LostLink.renderPagination(pagination, data, (page) => { searchState.page = page; renderSearchResults(); });
 
         const count = document.getElementById('completeSearchCount');
-        if (count) count.textContent = `${posts.length} tài sản`;
+        if (count) count.textContent = `${data.total} tài sản · Trang ${data.page}/${data.totalPages}`;
 
         results.innerHTML = posts.length > 0
             ? posts.map(searchResultHTML).join('')
@@ -108,17 +97,7 @@
         const results = document.getElementById('completeSearchResults');
         if (!results) return;
 
-        try {
-            searchState.posts = await request('/api/posts?status=active&sort=newest');
-            renderSearchResults();
-        } catch (error) {
-            results.innerHTML = `
-                <div class="portal-empty-state is-error">
-                    <h3>Không thể tải dữ liệu tìm kiếm</h3>
-                    <p>${escapeHTML(error.message)}</p>
-                </div>
-            `;
-        }
+        await renderSearchResults();
 
         const ids = [
             'completeSearchQuery',
@@ -134,7 +113,7 @@
             if (!element) return;
 
             const eventName = element.tagName === 'INPUT' ? 'input' : 'change';
-            element.addEventListener(eventName, renderSearchResults);
+            element.addEventListener(eventName, window.LostLink.debounce(() => { searchState.page = 1; renderSearchResults(); }));
         });
 
         document.getElementById('completeSearchReset')?.addEventListener('click', () => {
@@ -152,6 +131,7 @@
             if (high) high.checked = false;
             if (sort) sort.value = 'newest';
 
+            searchState.page = 1;
             renderSearchResults();
         });
     }
