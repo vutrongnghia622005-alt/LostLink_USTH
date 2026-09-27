@@ -92,7 +92,7 @@
                     </label>
                     <div class="portal-security-note full">
                         <i data-lucide="lock-keyhole"></i>
-                        <span>Thông tin xác minh chỉ được gửi tới backend Admin.</span>
+                        <span>Thông tin xác minh chỉ được gửi tới Admin.</span>
                     </div>
                     <div class="portal-dialog-actions full">
                         <button class="btn btn-secondary" type="button" data-claim-close>Hủy</button>
