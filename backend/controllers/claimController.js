@@ -2,11 +2,6 @@ const crypto = require('crypto');
 const pool = require('../config/database');
 const { isUuid, isText, databaseError } = require('../lib/validation');
 
-
-/* =========================================================
-   CODE GENERATOR
-========================================================= */
-
 function randomBase32(byteLength = 8) {
     const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     const bytes = crypto.randomBytes(byteLength);
@@ -44,11 +39,6 @@ function makeCode(prefix) {
     return `${prefix}-${randomBase32(8)}`;
 }
 
-
-/* =========================================================
-   CREATE CLAIM
-========================================================= */
-
 async function createClaim(req, res) {
 
     const postId = req.body.postId;
@@ -56,9 +46,6 @@ async function createClaim(req, res) {
     const contact = req.body.contact;
     const message = req.body.message;
     const answers = req.body.answers;
-
-
-    /* ---------- Validate input ---------- */
 
     if (
         !isUuid(postId) ||
@@ -89,9 +76,6 @@ async function createClaim(req, res) {
 
         await client.query('BEGIN');
 
-
-        /* ---------- Lock post ---------- */
-
         const postResult = await client.query(
             `
             SELECT
@@ -120,10 +104,6 @@ async function createClaim(req, res) {
 
 
         const post = postResult.rows[0];
-
-
-        /* ---------- Only found + active posts ---------- */
-
         if (
             post.type !== 'found' ||
             post.status !== 'active'
@@ -136,9 +116,6 @@ async function createClaim(req, res) {
                     'Claims can only be created for active found posts.'
             });
         }
-
-
-        /* ---------- Check duplicate claim ---------- */
 
         const duplicate = await client.query(
             `
@@ -157,9 +134,6 @@ async function createClaim(req, res) {
                 contact.trim()
             ]
         );
-
-
-        /* ---------- Required verification questions ---------- */
 
         const requiredQuestions =
             Array.isArray(post.verification_questions)
@@ -206,9 +180,6 @@ async function createClaim(req, res) {
                     'You already have an active claim for this post.'
             });
         }
-
-
-        /* ---------- Generate tracking code ---------- */
 
         let result;
 
@@ -304,12 +275,6 @@ async function createClaim(req, res) {
         client.release();
     }
 }
-
-
-/* =========================================================
-   TRACK CLAIM
-========================================================= */
-
 async function trackClaim(req, res) {
 
     const code = String(
@@ -377,10 +342,6 @@ async function trackClaim(req, res) {
     }
 }
 
-
-/* =========================================================
-   GET CLAIMS FOR POST
-========================================================= */
 
 async function getClaimsForPost(req, res) {
 
@@ -464,11 +425,6 @@ async function getClaimsForPost(req, res) {
     }
 }
 
-
-/* =========================================================
-   GET ALL CLAIMS - ADMIN
-========================================================= */
-
 async function getAllClaims(req, res) {
 
     try {
@@ -523,12 +479,6 @@ async function getAllClaims(req, res) {
     }
 }
 
-
-/* =========================================================
-   UPDATE CLAIM STATUS
-   ADMIN: APPROVE / REJECT / COMPLETE
-========================================================= */
-
 async function updateClaimStatus(req, res) {
 
     const claimId =
@@ -547,9 +497,6 @@ async function updateClaimStatus(req, res) {
         String(
             req.body.adminNote || ''
         ).trim();
-
-
-    /* ---------- Validate ---------- */
 
     if (
         !isUuid(claimId) ||
@@ -575,9 +522,6 @@ async function updateClaimStatus(req, res) {
     try {
 
         await client.query('BEGIN');
-
-
-        /* ---------- Find claim ---------- */
 
         const ref =
             await client.query(
@@ -606,9 +550,6 @@ async function updateClaimStatus(req, res) {
         const postId =
             ref.rows[0].post_id;
 
-
-        /* ---------- Lock post ---------- */
-
         const post =
             await client.query(
                 `
@@ -621,9 +562,6 @@ async function updateClaimStatus(req, res) {
                 `,
                 [postId]
             );
-
-
-        /* ---------- Lock claim ---------- */
 
         const current =
             await client.query(
@@ -653,8 +591,7 @@ async function updateClaimStatus(req, res) {
         }
 
 
-        const currentClaim =
-            current.rows[0];
+        const currentClaim = current.rows[0];
 
 
         const from =
