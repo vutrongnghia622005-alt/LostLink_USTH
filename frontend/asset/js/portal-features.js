@@ -198,17 +198,10 @@
         const result = document.getElementById('claimLookupResult');
         if (!result) return;
 
-        const normalized = String(code || '').trim().toUpperCase();
+        const normalired = String(code || '').trim().toUpperCase();
 
         if (!normalized) {
-            result.innerHTML = `
-                <div class="portal-empty-state">
-                    <i data-lucide="scan-search"></i>
-                    <h3>Nhập mã yêu cầu</h3>
-                    <p>Mã có dạng CLM-….</p>
-                </div>
-            `;
-            window.lucide?.createIcons();
+            result.innerHTML = ``;
             return;
         }
 
