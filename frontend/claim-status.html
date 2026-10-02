@@ -3,84 +3,183 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Theo dõi yêu cầu nhận đồ | Lost&Found USTH</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="asset/css/base.css">
     <link rel="stylesheet" href="asset/css/main.css">
     <link rel="stylesheet" href="asset/css/liquid-ui.css">
     <link rel="stylesheet" href="asset/css/portal-features.css">
-    <link rel="stylesheet" href="asset/css/portal-complete.css" />
+    <link rel="stylesheet" href="asset/css/portal-complete.css">
 </head>
 
+
 <body>
+
+    <!-- HEADER -->
     <header class="site-header">
-        <div class="container header-inner"><a class="brand" href="index.html">
-                <div class="brand-mark"><img src="asset/img/logo-usth.webp" alt="USTH"></div>
-                <div class="brand-copy"><strong>Lost&Found USTH</strong><span>Kết nối để những giá trị được trở
-                        lại</span></div>
+        <div class="container header-inner">
+            <a class="brand" href="index.html">
+                <div class="brand-mark">
+                    <img src="asset/img/logo-usth.webp" alt="USTH">
+                </div>
+                <div class="brand-copy">
+                    <strong>
+                        Lost&Found USTH
+                    </strong>
+                    <span>
+                        Kết nối để những giá trị được trở lại
+                    </span>
+                </div>
             </a>
-            <nav class="main-nav" aria-label="Điều hướng chính">
-                <a data-nav="home" href="index.html">Trang chủ</a>
-                <a data-nav="lost" href="lost.html">Tin thất lạc</a>
-                <a data-nav="found" href="found.html">Tin nhặt được</a>
-
-                <a data-nav="claim"
-                class="active"
-                href="claim-status.html">
-                    Mã yêu cầu
-                </a>
-
-                <a data-nav="contact" href="contact.html">Liên hệ</a>
-                <a data-nav="mine" href="my-posts.html">Tin của tôi</a>
+            <nav class="main-nav" aria-label="Điều hướng chính" >
+                <a data-nav="home" href="index.html"> Trang chủ </a>
+                <a data-nav="lost" href="lost.html" > Tin thất lạc </a>
+                <a data-nav="found" href="found.html"> Tin nhặt được </a>
+                <a data-nav="claim" class="active" href="claim-status.html"> Mã yêu cầu </a>
+                <a data-nav="contact" href="contact.html"> Liên hệ</a>
+                <a data-nav="mine" href="my-posts.html"> Tin của tôi</a>
             </nav>
-            <div class="header-actions"><a class="icon-btn" href="search.html" aria-label="Tìm kiếm"><i
-                        data-lucide="search"></i></a><a class="btn btn-primary btn-header" href="post.html"><i
-                        data-lucide="pencil"></i><span>Đăng tin</span></a></div><button class="menu-btn"
-                type="button"><i data-lucide="menu"></i></button>
+
+            <div class="header-actions">
+                <a class="icon-btn" href="search.html" aria-label="Tìm kiếm">
+                    <i data-lucide="search"></i>
+                </a>
+                <a class="btn btn-primary btn-header" href="post.html">
+                    <i data-lucide="pencil"></i>
+                    <span>Đăng tin</span>
+                </a>
+            </div>
+            <button class="menu-btn" type="button" aria-label="Mở menu">
+                <i data-lucide="menu"></i>
+            </button>
         </div>
+
     </header>
+
+
+    <!--MAIN-->
     <main>
-        <section class="page-hero">
+        <!-- HERO -->
+        <section class="page-hero claim-status-hero">
             <div class="container">
-                <div class="breadcrumbs"><a href="index.html">Trang chủ</a><span>/</span><span>Yêu cầu nhận đồ</span>
-                </div><span class="eyebrow">SECURE CLAIM</span>
-                <h1>Theo dõi yêu cầu nhận lại đồ</h1>
-                <p>Nhập mã CLM để xem trạng thái xác minh, kết quả duyệt và mã nhận tài sản.</p>
+                <div class="breadcrumbs">
+                    <a href="index.html">Trang chủ</a>
+                    <span>/</span>
+                    <span> Yêu cầu nhận đồ </span>
+                </div>
+
+                <span class="eyebrow"> SECURE CLAIM </span>
+
+                <h1> Theo dõi yêu cầu nhận lại đồ </h1>
+                <p>
+                    Nhập mã CLM để xem trạng thái xác minh,
+                    kết quả duyệt và mã nhận tài sản.
+                </p>
             </div>
         </section>
+
+        <!-- LOOKUP -->
         <section class="claim-status-page">
-            <div class="container portal-lookup-shell">
-                <aside class="portal-lookup-card"><span class="portal-kicker">TRA CỨU HỒ SƠ</span>
-                    <h2>Mã yêu cầu</h2>
-                    <p>Mã được cấp sau khi bạn gửi yêu cầu nhận lại một món đồ nhặt được.</p>
-                    <form class="portal-lookup-form" id="claimLookupForm"><input class="form-control"
-                            id="claimLookupCode" placeholder="CLM-XXXXXX" autocomplete="off"><button
-                            class="btn btn-primary" type="submit"><i data-lucide="scan-search"></i>Kiểm tra trạng
-                            thái</button></form>
-                    <div class="portal-security-note" style="margin-top:14px"><i
-                            data-lucide="shield-check"></i><span>Kết quả duyệt được cập nhật bởi Admin trên hệ
-                            thống.</span></div>
-                </aside>
-                <section id="claimLookupResult"></section>
+            <div class="container">
+                <div class="claim-status-layout">
+
+                    <!-- FORM -->
+                    <aside class="portal-lookup-card claim-status-card">
+                        <div class="claim-status-card-head">
+                            <div class="claim-status-icon">
+                                <i data-lucide="scan-search"></i>
+                            </div>
+                            <span class="portal-kicker">
+                                TRA CỨU HỒ SƠ
+                            </span>
+                            <h2> Mã yêu cầu </h2>
+                            <p>
+                                Nhập mã được cấp sau khi bạn gửi
+                                yêu cầu nhận lại một món đồ nhặt được.
+                            </p>
+                        </div>
+                        <form class="portal-lookup-form" id="claimLookupForm" >
+                            <label class="claim-code-label" for="claimLookupCode">
+                                Mã yêu cầu của bạn
+                            </label>
+                            <input class="form-control" id="claimLookupCode" placeholder="Ví dụ: CLM-K66TDDE7ATE" autocomplete="off" required>
+                            <button class="btn btn-primary" type="submit">
+                                <i data-lucide="scan-search"></i>
+                                <span> Kiểm tra trạng thái</span>
+                            </button>
+
+                        </form>
+                        <div class="portal-security-note claim-status-note">
+                            <i data-lucide="shield-check"></i>
+                            <span>
+                                Kết quả xác minh và trạng thái yêu cầu
+                                được cập nhật bởi Admin của hệ thống.
+                            </span>
+                        </div>
+                    </aside>
+
+                    <!-- RESULT -->
+                    <section id="claimLookupResult" class="claim-status-result" aria-live="polite"></section>
+                </div>
             </div>
         </section>
     </main>
+
+    <!-- FOOTER -->
     <footer class="site-footer">
-        <div class="container footer-inner"><a class="brand footer-brand" href="index.html">
-                <div class="brand-mark"><img src="asset/img/logo-usth.webp" alt="USTH"></div>
-                <div class="brand-copy"><strong>Lost&Found USTH</strong><span>Kết nối để những giá trị được trở
-                        lại</span></div>
+        <div class="container footer-inner">
+            <!-- BRAND -->
+            <a class="brand footer-brand" href="index.html">
+                <div class="brand-mark">
+                    <img src="asset/img/logo-usth.webp" alt="USTH" >
+                </div>
+
+                <div class="brand-copy">
+                    <strong>Lost&Found USTH</strong>
+                    <span> Kết nối để những giá trị được trở lại</span>
+                </div>
             </a>
-            <nav class="footer-nav"><a href="index.html">Trang chủ</a></nav>
+
+            <!-- FOOTER NAV -->
+            <nav class="footer-nav" aria-label="Điều hướng chân trang" >
+                <a href="index.html"> Trang chủ </a>
+                <span></span>
+                <a href="lost.html"> Tin thất lạc </a>
+                <span></span>
+                <a href="found.html"> Tin nhặt được</a>
+                <span></span>
+                <a href="claim-status.html">Mã yêu cầu</a>
+                <span></span>
+                <a href="contact.html">Liên hệ</a>
+                <span></span>
+                <a href="my-posts.html">Tin của tôi</a>
+            </nav>
+
+            <!-- FOOTER RIGHT -->
             <div class="footer-right">
-                <p>© 2026 Lost&Found USTH.</p>
+                <div class="socials">
+                    <a href="#" aria-label="Facebook">
+                        <i data-lucide="facebook"></i>
+                    </a>
+                    <a href="#" aria-label="Instagram">
+                        <i data-lucide="instagram"></i>
+                    </a>
+                    <a href="#" aria-label="Youtube">
+                        <i data-lucide="youtube"></i>
+                    </a>
+                </div>
+                <p>
+                    © 2026 Lost&Found USTH.
+                    Vì một cộng đồng USTH tốt đẹp hơn.
+                </p>
             </div>
         </div>
     </footer>
+
+    <!--SCRIPT-->
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
     <script src="asset/js/config.js"></script>
     <script src="asset/js/api.js"></script>
@@ -90,5 +189,4 @@
     <script src="asset/js/portal-features.js"></script>
     <script src="asset/js/portal-complete.js"></script>
 </body>
-
 </html>
