@@ -57,18 +57,14 @@
     margin-right: 4px;
 }
 
-/* =========================================================
-   VERIFICATION QUESTIONS
-========================================================= */
+/*VERIFICATION QUESTIONS*/
 
 .claim-answer-row {
     display: flex;
     flex-direction: column;
     gap: 6px;
-
     margin-top: 14px;
     padding-top: 14px;
-
     border-top: 1px dashed #d7e1ed;
 }
 
@@ -78,34 +74,26 @@
 
 .claim-answer-row strong {
     display: block;
-
     font-size: 14px;
     line-height: 1.55;
-
     color: #15315f;
 }
 
 .claim-answer-row span {
     display: block;
-
     font-size: 14px;
     line-height: 1.65;
-
     color: #4f5f78;
 }
 
 .claim-answer-row small {
     display: block;
-
     margin-top: 2px;
-
     font-size: 12px;
     line-height: 1.5;
 }
 
-/* =========================================================
-   PICKUP CODE
-========================================================= */
+/*  PICKUP CODE */
 
 .admin-feature-card .verification-token {
     margin: 18px 0;
@@ -119,49 +107,37 @@
     line-height: 1.4;
 }
 
-/* =========================================================
-   ADMIN NOTE
-========================================================= */
+/*  ADMIN NOTE */
 
 .admin-reply-box {
     display: block;
-
     margin-top: 18px;
     margin-bottom: 16px;
 }
 
 .admin-reply-box > span {
     display: block;
-
     margin-bottom: 8px;
-
     font-size: 14px;
     font-weight: 600;
     line-height: 1.5;
-
     color: #15315f;
 }
 
 .admin-reply-box textarea {
     display: block;
-
     width: 100%;
     min-height: 96px;
-
     padding: 12px 14px;
-
     font-size: 14px;
     line-height: 1.6;
 }
 
-/* =========================================================
-   BUTTONS
-========================================================= */
+/* BUTTONS */
 
 .admin-feature-card .admin-actions {
     display: flex;
     gap: 10px;
-
     margin-top: 4px;
     margin-bottom: 12px;
 }
@@ -169,35 +145,26 @@
 /* Ngày tạo */
 .admin-feature-card > small {
     display: block;
-
     margin-top: 6px;
-
     font-size: 12px;
     line-height: 1.5;
-
     color: #61728a;
 }
 
 
-/* =========================================================
-   MOBILE
-========================================================= */
+/* MOBILE */
 
 @media (max-width: 760px) {
-
     .admin-feature-card {
         padding: 18px;
     }
-
     .admin-feature-card-head {
         flex-direction: column;
         gap: 12px;
     }
-
     .admin-feature-card h3 {
         font-size: 17px;
     }
-
     .claim-answer-row strong,
     .claim-answer-row span {
         font-size: 13px;
