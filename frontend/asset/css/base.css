@@ -1,40 +1,37 @@
 * {
-    box-sizing: border-box
+    box-sizing: border-box;
 }
 
 html {
-    scroll-behavior: smooth
+    scroll-behavior: smooth;
 }
 
-body {
-    margin: 0
-}
 
 img {
     display: block;
-    max-width: 100%
+    max-width: 100%;
 }
 
 a {
     text-decoration: none;
-    color: inherit
+    color: inherit;
 }
 
 button,
 input,
 select,
 textarea {
-    font: inherit
+    font: inherit;
 }
 
 button {
-    cursor: pointer
+    cursor: pointer;
 }
 
 ul {
     margin: 0;
     padding: 0;
-    list-style: none
+    list-style: none;
 }
 
 .inline-message {
@@ -45,16 +42,16 @@ ul {
     background: #fff7f8;
     color: #922238;
     font-size: 14px;
-    line-height: 1.5
+    line-height: 1.5;
 }
 
 .inline-message:empty {
-    display: none
+    display: none;
 }
 
 [aria-invalid="true"] {
     outline: 2px solid #922238;
-    outline-offset: 2px
+    outline-offset: 2px;
 }
 
 .pagination {
@@ -62,11 +59,11 @@ ul {
     justify-content: center;
     gap: 8px;
     flex-wrap: wrap;
-    margin: 20px 0
+    margin: 20px 0;
 }
 
 .pagination[hidden] {
-    display: none
+    display: none;
 }
 
 .page-btn {
@@ -74,25 +71,25 @@ ul {
     border: 1px solid #c8d4e4;
     border-radius: 6px;
     background: #fff;
-    color: #17335f
+    color: #17335f;
 }
 
 .page-btn.active {
     background: #17335f;
-    color: #fff
+    color: #fff;
 }
 
 .page-btn:disabled {
     cursor: default;
-    opacity: .6
+    opacity: .6;
 }
 
 input::placeholder,
 textarea::placeholder {
     color: #4f5f78;
-    opacity: 1
+    opacity: 1;
 }
 
 [hidden] {
-    display: none !important
+    display: none !important;
 }
