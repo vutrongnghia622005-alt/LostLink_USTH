@@ -598,9 +598,7 @@ async function updateClaimStatus(req, res) {
             currentClaim.status;
 
 
-        /* =================================================
-           STATUS TRANSITION RULES
-        ================================================= */
+        /* STATUS TRANSITION RULES */
 
         const allowed =
             (
@@ -651,9 +649,7 @@ async function updateClaimStatus(req, res) {
         }
 
 
-        /* =================================================
-           CHECK OTHER APPROVED CLAIM
-        ================================================= */
+        /*  CHECK OTHER APPROVED CLAIM*/
 
         if (status === 'approved') {
 
@@ -690,13 +686,13 @@ async function updateClaimStatus(req, res) {
         }
 
 
-        /* =================================================
+        /* 
            PICKUP CODE
 
            IMPORTANT:
            Không dùng CASE WHEN $1 trong SQL nữa.
            Đây chính là phần sửa lỗi PostgreSQL 42P08.
-        ================================================= */
+       */
 
         let pickupCode =
             currentClaim.pickup_code;
@@ -715,13 +711,12 @@ async function updateClaimStatus(req, res) {
         }
 
 
-        /* =================================================
+        /* 
            UPDATE CLAIM
-
            $1 chỉ dùng cho status.
            Không còn xung đột kiểu:
            text vs character varying.
-        ================================================= */
+        */
 
         const result =
             await client.query(
@@ -760,9 +755,7 @@ async function updateClaimStatus(req, res) {
         }
 
 
-        /* =================================================
-           COMPLETE CLAIM
-        ================================================= */
+        /*COMPLETE CLAIM*/
 
         if (
             status === 'completed'
@@ -840,9 +833,7 @@ async function updateClaimStatus(req, res) {
 }
 
 
-/* =========================================================
-   EXPORT
-========================================================= */
+/* EXPORT */
 
 module.exports = {
 
